@@ -5,7 +5,7 @@ import { useTheme } from 'next-themes';
 import { Pause, Play } from 'lucide-react';
 import type { WavesEffect } from 'vanta/dist/vanta.waves.min.js';
 
-const waveColor = (dark: boolean) => (dark ? 0x123c64 : 0x729fd0);
+const waveColor = (dark: boolean) => (dark ? 0x174d38 : 0x78ad91);
 
 export function WaveBackground() {
   const host = useRef<HTMLDivElement>(null);

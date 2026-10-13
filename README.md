@@ -4,6 +4,23 @@ A watch-party app with shared playback, chat, reactions, polls, and host handove
 
 ## Development
 
+### Vercel / Next.js
+
+`vercel.json` selects the native Next.js build (`pnpm build:vercel`), which produces `.next/routes-manifest.json`. Do not set Vercel's Output Directory to `dist`; remove any Output Directory override. Use the Next.js framework preset and the repository root as Root Directory.
+
+Rooms on Vercel use Neon Postgres:
+
+1. Connect a Neon database to the Vercel project through the Marketplace, or create one in Neon.
+2. Set the server-only `DATABASE_URL` environment variable to its Neon connection string for the desired Vercel environments. Never use a `NEXT_PUBLIC_` prefix or commit the connection string.
+3. Run the SQL in `db/postgres.sql` once in that database's SQL editor.
+4. Redeploy the latest GitHub commit.
+
+The homepage builds without database credentials. Room requests return HTTP 503 until `DATABASE_URL` is configured; they also require the SQL schema above. No in-memory room fallback is used, so rooms remain shared across serverless instances.
+
+For local Next.js development, put `DATABASE_URL` in an ignored `.env.local`, then use `pnpm dev:vercel`. Use `pnpm build:vercel` and `pnpm start:vercel` to test the production Next.js server. The Vercel database is separate from the local Cloudflare database.
+
+### Cloudflare / Sites local preview
+
 Requires Node.js 22.13 or later and pnpm 11.19.0.
 
 ```sh
@@ -51,7 +68,7 @@ The registry components in `components/ui/` and styles in `vendor/` retain their
 
 ## Room protocol
 
-D1 stores each room as a JSON record with a monotonic revision. Writes use compare-and-swap and retry up to 20 collisions. Each participant has a bearer token; public snapshots omit tokens and the retry ledger. Actions carry an ID so retries cannot repeat a mutation.
+Rooms are stored as JSON records with a monotonic revision: in D1 for Cloudflare, or Neon Postgres for Vercel. Writes use compare-and-swap and retry up to 20 collisions. Each participant has a bearer token; public snapshots omit tokens and the retry ledger. Actions carry an ID so retries cannot repeat a mutation.
 
 The host controls playback, source changes, poll creation, and host transfer. Participants can chat, react, share links in chat, vote, and mark themselves ready. Rooms accept 30 active participants. Heartbeats run every eight seconds; presence expires after 25 seconds. A heartbeat or action assigns an active replacement when the host is offline.
 

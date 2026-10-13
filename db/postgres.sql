@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS rooms (
+  code TEXT PRIMARY KEY,
+  revision INTEGER NOT NULL,
+  state TEXT NOT NULL,
+  updated BIGINT NOT NULL
+);

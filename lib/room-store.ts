@@ -1,4 +1,4 @@
-import { env } from 'cloudflare:workers';
+import { roomDatabase } from './room-database';
 import {
   activeMembers,
   apply,
@@ -19,27 +19,7 @@ const STALE_MEMBER_AGE_MS = 60 * 60 * 1000;
 const WRITE_ATTEMPTS = 20;
 const ROOM_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
-function database() {
-  if (!env.DB) throw new RoomError('Room storage is unavailable.', 503);
-  return env.DB;
-}
-
-export const roomStore: RoomStore = {
-  read: (code) =>
-    database()
-      .prepare('SELECT state, revision FROM rooms WHERE code = ?')
-      .bind(code)
-      .first<{ state: string; revision: number }>(),
-  cas: async (code, revision, room) => {
-    const result = await database()
-      .prepare(
-        'UPDATE rooms SET state = ?, revision = ?, updated = ? WHERE code = ? AND revision = ?',
-      )
-      .bind(JSON.stringify(room), room.revision, Date.now(), code, revision)
-      .run();
-    return result.meta.changes === 1;
-  },
-};
+export const roomStore: RoomStore = roomDatabase;
 
 type NewMember = Pick<StoredMember, 'id' | 'name' | 'token'>;
 
@@ -66,12 +46,7 @@ export async function createRoom(
       { type: 'source', id: crypto.randomUUID(), ...source },
       member.token,
     );
-  await database()
-    .prepare(
-      'INSERT INTO rooms (code, revision, state, updated) VALUES (?, ?, ?, ?)',
-    )
-    .bind(code, room.revision, JSON.stringify(room), Date.now())
-    .run();
+  await roomDatabase.insert(room);
   return entryResponse(room, member);
 }
 

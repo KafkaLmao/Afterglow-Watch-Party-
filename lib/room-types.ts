@@ -107,6 +107,10 @@ export interface RoomStore {
   cas(code: string, revision: number, room: StoredRoom): Promise<boolean>;
 }
 
+export interface RoomDatabase extends RoomStore {
+  insert(room: StoredRoom): Promise<void>;
+}
+
 export type Tab = 'discover' | 'room';
 export type Modal =
   | EntryMode

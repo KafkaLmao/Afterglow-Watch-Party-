@@ -1,5 +1,6 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
+import { useChatMotion } from '../hooks/use-chat-motion';
 import {
   ArrowUpRight,
   ArrowRight,
@@ -32,11 +33,7 @@ export function SocialPanel({
 }: SocialPanelProps) {
   const poll = room.poll;
   const [message, setMessage] = useState('');
-  const chatEnd = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const panel = chatEnd.current?.parentElement;
-    if (panel) panel.scrollTop = panel.scrollHeight;
-  }, [room.messages.length]);
+  const chatList = useChatMotion(room.code);
   return (
     <aside className="social-panel">
       <div className="panel-heading">
@@ -45,7 +42,15 @@ export function SocialPanel({
         </h3>
         <span className="online-dot" />
       </div>
-      <div className="chat-list" data-lenis-prevent>
+      <div
+        className="chat-list"
+        ref={chatList}
+        role="log"
+        aria-label="Room messages"
+        aria-relevant="additions"
+        tabIndex={0}
+        data-lenis-prevent
+      >
         {room.messages.length ? (
           room.messages.map((m) => (
             <div
@@ -82,7 +87,6 @@ export function SocialPanel({
             </p>
           </div>
         )}
-        <div ref={chatEnd} />
       </div>
       <form
         className="chat-form"

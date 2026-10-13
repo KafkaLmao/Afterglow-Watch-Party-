@@ -1,8 +1,9 @@
 'use client';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ArrowUpRight, Users, Copy, BarChart3, Link } from 'lucide-react';
 import { MediaLinkForm } from './media-link-form';
 import { errorMessage } from '../lib/display';
+import { parseRoomInvite, roomInviteUrl } from '../lib/room-invite.mjs';
 import type {
   Modal,
   Session,
@@ -26,7 +27,6 @@ interface RoomDialogProps {
   notify: (message: string) => void;
   enterRoom: (entry: EntryRequest) => Promise<void>;
   leave: () => Promise<void>;
-  copyInvite: () => Promise<void>;
   onClose: () => void;
 }
 export function RoomDialog({
@@ -43,7 +43,6 @@ export function RoomDialog({
   notify,
   enterRoom,
   leave,
-  copyInvite,
   onClose,
 }: RoomDialogProps) {
   const [roomName, setRoomName] = useState('Friday night club');
@@ -53,16 +52,41 @@ export function RoomDialog({
       : new URLSearchParams(location.search).get('room') || '',
   );
   const [busy, setBusy] = useState(false);
+  const inviteInput = useRef<HTMLInputElement>(null);
+  const [inviteFeedback, setInviteFeedback] = useState('');
+  const inviteUrl =
+    session && typeof location !== 'undefined'
+      ? roomInviteUrl(location.origin, session.code)
+      : '';
+  async function copyInvite() {
+    if (!inviteUrl) return;
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      setInviteFeedback('Link copied. Send it to your friends to join.');
+    } catch {
+      inviteInput.current?.focus();
+      inviteInput.current?.select();
+      setInviteFeedback(
+        'Copy the selected link, or share the room code below.',
+      );
+    }
+  }
   const [question, setQuestion] = useState('What should we watch next?');
   const [options, setOptions] = useState('');
   async function enter(type: EntryMode) {
     setBusy(true);
     setError('');
     try {
+      const roomCode = type === 'join' ? parseRoomInvite(code) : undefined;
+      if (type === 'join' && !roomCode) {
+        throw new Error(
+          'Paste an invite link or enter the 8-character room code.',
+        );
+      }
       await enterRoom({
         type,
         name,
-        code,
+        code: roomCode || '',
         roomName,
         ...(type === 'create' && initialSource
           ? { source: initialSource }
@@ -98,7 +122,7 @@ export function RoomDialog({
           <p>
             {modal === 'create'
               ? 'A room for every laugh, gasp, and “wait, rewind that.”'
-              : 'Enter your name and the code your host shared.'}
+              : 'Enter your name and the invite link or code your host shared.'}
           </p>
           <form
             onSubmit={(e) => {
@@ -137,13 +161,16 @@ export function RoomDialog({
               </label>
             ) : (
               <label>
-                Room code
+                Invite link or room code
                 <input
-                  maxLength={12}
+                  maxLength={2048}
                   required
                   value={code}
-                  onChange={(e) => setCode(e.target.value.toUpperCase())}
-                  placeholder="ABCD2345"
+                  onChange={(e) => setCode(e.target.value)}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  placeholder="Paste invite link or ABCD2345"
                 />
               </label>
             )}
@@ -299,17 +326,27 @@ export function RoomDialog({
       ) : (
         <>
           <h2>Save a seat.</h2>
-          <p>Share this link with your friends:</p>
-          <input
-            readOnly
-            value={`${typeof location !== 'undefined' ? location.origin : ''}/?room=${session?.code}`}
-          />
+          <p>Send this link to your friends. They only need a name to join.</p>
+          <label>
+            Invite link
+            <input
+              ref={inviteInput}
+              readOnly
+              value={inviteUrl}
+              onFocus={(event) => event.currentTarget.select()}
+            />
+          </label>
           <p>
             Room code: <strong>{session?.code}</strong>
           </p>
-          <button className="button primary" onClick={copyInvite}>
+          <button
+            className="button primary"
+            disabled={!inviteUrl}
+            onClick={copyInvite}
+          >
             <Copy size={16} /> Copy link
           </button>
+          {inviteFeedback && <p role="status">{inviteFeedback}</p>}
         </>
       )}
       {error && !['create', 'join'].includes(modal) && (

@@ -30,7 +30,6 @@ interface WatchRoomProps {
   setTab: (tab: Tab) => void;
   setModal: (modal: Modal) => void;
   action: SendAction;
-  copyInvite: () => Promise<void>;
   leave: () => Promise<void>;
 }
 export function WatchRoom({
@@ -42,7 +41,6 @@ export function WatchRoom({
   setTab,
   setModal,
   action,
-  copyInvite,
   leave,
 }: WatchRoomProps) {
   const isHost = room.host === session.id;
@@ -83,7 +81,7 @@ export function WatchRoom({
           >
             <Link size={16} /> Add a link
           </button>
-          <button className="button primary" onClick={copyInvite}>
+          <button className="button primary" onClick={() => setModal('invite')}>
             <Plus size={16} /> Invite friends
           </button>
         </div>

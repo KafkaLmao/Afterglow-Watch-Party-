@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { errorMessage } from '../lib/display';
+import { parseRoomInvite } from '../lib/room-invite.mjs';
 import type {
   ActionRequest,
   EntryRequest,
@@ -136,7 +137,7 @@ export function useRoom(onConnected: () => void) {
         );
         if (!isSession(stored)) return;
         const inviteCode = new URLSearchParams(location.search).get('room');
-        if (inviteCode && inviteCode !== stored.code) return;
+        if (inviteCode && parseRoomInvite(inviteCode) !== stored.code) return;
         sessionRef.current = stored;
         await request();
         if (cancelled || generation !== connectionGeneration.current) return;

@@ -19,7 +19,6 @@ interface DiscoverProps {
   setModal: (modal: Modal) => void;
   action: SendAction;
   notify: (message: string) => void;
-  copyInvite: () => Promise<void>;
   createWithVideo: (source: VideoSource) => void;
 }
 export function Discover({
@@ -29,7 +28,6 @@ export function Discover({
   setModal,
   action,
   notify,
-  copyInvite,
   createWithVideo,
 }: DiscoverProps) {
   const isHost = room?.host === session?.id;
@@ -126,9 +124,9 @@ export function Discover({
         </div>
         <button
           className="text-button"
-          onClick={() => (session ? copyInvite() : setModal('join'))}
+          onClick={() => setModal(session ? 'invite' : 'join')}
         >
-          {session ? 'Copy invitation' : 'Have a room code?'}
+          {session ? 'Invite friends' : 'Have a room code?'}
           <ArrowUpRight size={18} />
         </button>
       </section>

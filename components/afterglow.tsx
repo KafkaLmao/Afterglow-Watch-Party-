@@ -77,16 +77,6 @@ export function Afterglow() {
       if (toastTimer.current) clearTimeout(toastTimer.current);
     };
   }, []);
-  async function copyInvite() {
-    try {
-      await navigator.clipboard.writeText(
-        location.origin + '/?room=' + session?.code,
-      );
-      notify('Invite link copied.');
-    } catch {
-      setModal('invite');
-    }
-  }
   async function leave() {
     if (await leaveRoom()) {
       setTab('discover');
@@ -139,7 +129,6 @@ export function Afterglow() {
           setModal={setModal}
           action={action}
           notify={notify}
-          copyInvite={copyInvite}
           createWithVideo={(source) => {
             setPendingSource(source);
             setModal('create');
@@ -155,7 +144,6 @@ export function Afterglow() {
           setTab={setTab}
           setModal={setModal}
           action={action}
-          copyInvite={copyInvite}
           leave={leave}
         />
       ) : (
@@ -185,7 +173,6 @@ export function Afterglow() {
           notify={notify}
           enterRoom={enterRoom}
           leave={leave}
-          copyInvite={copyInvite}
           onClose={closeDialog}
         />
       )}

@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-11T08:17:58.337Z",
+  "environment": "Windows, Wrangler local Worker + local D1, 127.0.0.1 loopback; 10 independent HTTP sessions polling after each response with 100 ms delay",
+  "controls": 30,
+  "observations": 300,
+  "propagationMs": {
+    "p50": 188.23030000000017,
+    "p95": 234.34929999999986,
+    "max": 379.4118000000001
+  },
+  "roundTripMs": {
+    "p50": 124.47819999999956,
+    "p95": 161.62120000000004
+  },
+  "integrationChecks": [
+    "10 concurrent sessions",
+    "10 concurrent chats retained",
+    "10 simultaneous votes retained",
+    "late join playback snapshot",
+    "idempotent retry",
+    "host transfer",
+    "former host control rejected"
+  ],
+  "limits": "Loopback benchmark is not a physical LAN test. This measures server state observed by HTTP clients, not browser media event latency or rendered playback drift. Browser media drift must be separately measured on real devices."
+}

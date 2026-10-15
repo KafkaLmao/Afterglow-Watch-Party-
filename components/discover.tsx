@@ -97,13 +97,14 @@ export function Discover({
             <br />
             Everyone together.
           </h2>
-          <p>YouTube, Vimeo, or your own media.</p>
+          <p>YouTube, Vimeo, Anikoto, or your own media.</p>
           <button className="button primary" onClick={goToVideo}>
             Bring your link <ArrowUpRight size={17} />
           </button>
           <div className="preview-provider-tags">
             <span>YouTube</span>
             <span>Vimeo</span>
+            <span>Anikoto</span>
             <span>Video & audio</span>
           </div>
         </div>

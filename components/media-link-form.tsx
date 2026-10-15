@@ -3,6 +3,7 @@
 import { useId, useState } from 'react';
 import { ArrowUpRight, Link } from 'lucide-react';
 import { resolveMediaSource } from '../lib/media-source.mjs';
+import { loadAnikotoEpisode } from '../lib/anikoto-player';
 import type { VideoSource } from '../lib/room-types';
 
 export function MediaLinkForm({
@@ -33,7 +34,16 @@ export function MediaLinkForm({
         setBusy(true);
         try {
           const source = resolveMediaSource(url);
-          if (!(await onSubmit({ url: source.url, title: title.trim() })))
+          const episode =
+            source.kind === 'anikoto'
+              ? await loadAnikotoEpisode(source.url)
+              : undefined;
+          if (
+            !(await onSubmit({
+              url: source.url,
+              title: title.trim() || episode?.title || '',
+            }))
+          )
             setError('Could not load this link. Please try again.');
         } catch (failure) {
           setError(
@@ -54,7 +64,7 @@ export function MediaLinkForm({
           type="url"
           required
           maxLength={2048}
-          placeholder="Paste a YouTube, Vimeo, or media file link"
+          placeholder="Paste a YouTube, Vimeo, Anikoto, or media file link"
           value={url}
           onChange={(event) => {
             setUrl(event.target.value);
@@ -77,8 +87,8 @@ export function MediaLinkForm({
         disabled={disabled || busy}
       />
       <p id={`${id}-help`} className="video-link-help">
-        YouTube · Vimeo · Direct video & audio. Private videos and services that
-        block embedding may not play.
+        YouTube · Vimeo · Anikoto episodes · Direct video & audio. Private
+        videos and services that block embedding may not play.
       </p>
       {error && (
         <p id={`${id}-error`} className="video-link-error" role="alert">

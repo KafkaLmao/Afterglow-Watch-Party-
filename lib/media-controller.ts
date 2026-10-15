@@ -1,4 +1,5 @@
 import type { resolveMediaSource } from './media-source.mjs';
+import { prepareAnikotoMedia, type Caption } from './anikoto-player';
 
 export type MediaSource = ReturnType<typeof resolveMediaSource>;
 export interface MediaSample {
@@ -14,6 +15,8 @@ export interface MediaController {
   seek(seconds: number): Promise<void>;
   mute(value: boolean): Promise<void>;
   rate?(value: number): void;
+  captions?: Caption[];
+  caption?(index: number): void;
   destroy(): void;
 }
 interface Events {
@@ -120,8 +123,19 @@ export async function createMediaController(
   media: HTMLMediaElement | null,
   events: Events,
   signal: AbortSignal,
+  refresh = false,
 ): Promise<MediaController> {
   if (media) {
+    const anikoto =
+      source.kind === 'anikoto'
+        ? await prepareAnikotoMedia(
+            source.url,
+            media,
+            signal,
+            events.error,
+            refresh,
+          )
+        : undefined;
     media.addEventListener('ended', () => events.ended(media.duration), {
       signal,
     });
@@ -134,6 +148,8 @@ export async function createMediaController(
       { signal },
     );
     return {
+      captions: anikoto?.captions,
+      caption: anikoto?.caption,
       sample: async () => ({
         position: media.currentTime,
         duration: Number.isFinite(media.duration) ? media.duration : 0,
@@ -156,7 +172,8 @@ export async function createMediaController(
         media.playbackRate = value;
       },
       destroy: () => {
-        media.pause();
+        if (anikoto) anikoto.destroy();
+        else media.pause();
       },
     };
   }

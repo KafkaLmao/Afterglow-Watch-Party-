@@ -2,7 +2,15 @@
 
 **[Open Afterglow ↗](https://afterglowparty.vercel.app)** · Watch together, wherever you are.
 
-A watch-party app with shared playback, chat, reactions, polls, and host handover. Rooms start empty. Hosts paste a YouTube, Vimeo, or direct HTTPS video/audio link; there is no starter-film catalog or automatic video.
+A watch-party app with shared playback, chat, reactions, polls, and host handover. Rooms start empty. Hosts paste a YouTube, Vimeo, Anikoto episode, or direct HTTPS video/audio link; there is no starter-film catalog or automatic video.
+
+## Anikoto episodes
+
+Paste an `https://anikototv.to/watch/.../ep-1` episode link into the media form. Afterglow checks availability, fills in the title, and plays the episode with shared play, pause, and seeking. Each viewer can choose subtitles independently. Subtitled audio is the default; append `?audio=dub` to request a dubbed version when available.
+
+Anikoto support is experimental and currently uses its Vidstream-1 player metadata. Provider changes, missing episodes, and regional restrictions can interrupt playback. Retry the player to resolve a fresh stream. Rooms retain the original episode link, rather than a temporary media URL.
+
+The server relays HLS playlists, media segments, and captions because the upstream host checks the request referrer. This consumes hosting bandwidth for every viewer. The relay accepts only supported provider hosts and files within the resolved episode directory; it does not fetch arbitrary websites. No additional environment variables or database migrations are required.
 
 ## Development
 
@@ -62,6 +70,8 @@ With a built server running, `node tests/benchmark.mjs http://127.0.0.1:5173` ch
 | `hooks/use-preferences.ts`                                 | Browser-local display name and saved films                  |
 | `lib/room-types.ts`                                        | Shared room, session, and action contracts                  |
 | `lib/room-engine.mjs`                                      | Framework-independent room state transitions                |
+| `lib/anikoto.mjs`, `app/api/media/anikoto/`                | Anikoto resolution, bounded metadata cache, and media relay |
+| `lib/anikoto-player.ts`, `lib/media-controller.ts`         | HLS playback, captions, and provider player controls        |
 | `lib/room-store.ts`, `app/api/room/route.ts`               | D1 persistence, request validation, and room API            |
 | `db/`, `drizzle/`                                          | Database schema and migrations                              |
 | `build/`, `scripts/`                                       | Sites/Cloudflare runtime and build integration              |
@@ -86,6 +96,6 @@ Hosting access and room membership are separate. An invite grants room membershi
 
 ## Limits
 
-YouTube video links (watch, share, Shorts, live, and embed) and Vimeo links use official provider players. Direct file links support video formats such as MP4, WebM, MOV, and audio formats such as MP3, WAV, and OGG, subject to browser codec support. Private, age-restricted, region-restricted, or non-embeddable videos may fail. DRM streaming-service pages and playlists are not supported. Live content has provider-dependent seeking limits; synchronization is best suited to on-demand media. Existing rooms with an automatic catalog selection appear empty until the host adds a link.
+YouTube video links (watch, share, Shorts, live, and embed) and Vimeo links use official provider players. Anikoto episode links use the HLS adapter described above. Direct file links support video formats such as MP4, WebM, MOV, and audio formats such as MP3, WAV, and OGG, subject to browser codec support. Private, age-restricted, region-restricted, or non-embeddable videos may fail. Other streaming-service pages, DRM playback, and arbitrary playlists are not supported. Live content has provider-dependent seeking limits; synchronization is best suited to on-demand media. Existing rooms with an automatic catalog selection appear empty until the host adds a link.
 
 Polling generates database traffic. Larger deployments would need a per-room coordinator and push transport. Automated room retention cleanup is not implemented. Validate latency and media drift on real devices before relying on the recorded local benchmark.

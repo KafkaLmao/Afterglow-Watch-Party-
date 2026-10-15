@@ -50,8 +50,6 @@ export function MediaPlayer({
   const [error, setError] = useState('');
   const [ready, setReady] = useState(false);
   const [retry, setRetry] = useState(0);
-  const [captions, setCaptions] = useState<{ label: string }[]>([]);
-  const [caption, setCaption] = useState(-1);
   const embedded = source.kind === 'youtube' || source.kind === 'vimeo';
 
   useEffect(() => {
@@ -116,7 +114,6 @@ export function MediaPlayer({
         },
       },
       abort.signal,
-      retry > 0,
     )
       .then((result) => {
         if (abort.signal.aborted) {
@@ -124,11 +121,6 @@ export function MediaPlayer({
           return;
         }
         controller.current = result;
-        setCaptions(result.captions || []);
-        const selected =
-          result.captions?.findIndex((track) => track.default) ?? -1;
-        result.caption?.(selected);
-        setCaption(selected);
         setReady(true);
       })
       .catch((failure) => {
@@ -233,7 +225,7 @@ export function MediaPlayer({
         {!embedded && (
           <video
             ref={media}
-            src={source.kind === 'anikoto' ? undefined : source.url}
+            src={source.url}
             playsInline
             preload="metadata"
             className={source.kind === 'audio' ? 'audio-media' : ''}
@@ -313,26 +305,6 @@ export function MediaPlayer({
             <span className="provider-label">
               {source.label} · {isHost ? 'Host controls' : 'Following host'}
             </span>
-            {captions.length > 0 && (
-              <select
-                className="caption-select"
-                aria-label="Subtitles"
-                value={caption}
-                disabled={!ready || !!error}
-                onChange={(event) => {
-                  const index = Number(event.target.value);
-                  controller.current?.caption?.(index);
-                  setCaption(index);
-                }}
-              >
-                <option value={-1}>Subtitles off</option>
-                {captions.map((track, index) => (
-                  <option key={index} value={index}>
-                    {track.label}
-                  </option>
-                ))}
-              </select>
-            )}
             <button
               aria-label="Full screen"
               onClick={() => {

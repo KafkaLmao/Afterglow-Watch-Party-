@@ -240,8 +240,8 @@ export function RoomDialog({
         <>
           <h2>Add your media.</h2>
           <p>
-            Paste a YouTube, Vimeo, or Anikoto episode link, or a direct
-            video/audio link. Everyone watches the same source.
+            Paste a YouTube or Vimeo video, or a direct video/audio link.
+            Everyone watches the same source.
           </p>
           <MediaLinkForm
             disabled={!isHost}
@@ -309,9 +309,9 @@ export function RoomDialog({
         <>
           <h2>Your links, together.</h2>
           <p>
-            Rooms start empty. Add a YouTube, Vimeo, or Anikoto episode link, or
-            a direct HTTPS video or audio file. Play, pause, and seek are
-            shared; volume and fullscreen stay personal.
+            Rooms start empty. Add a YouTube or Vimeo video, or a direct HTTPS
+            video or audio file. Play, pause, and seek are shared; volume and
+            fullscreen stay personal.
           </p>
           <p>
             Private videos, age-restricted content, and videos with embedding

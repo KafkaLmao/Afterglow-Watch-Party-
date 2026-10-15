@@ -1,5 +1,7 @@
 # Afterglow
 
+**[Open Afterglow ↗](https://afterglowparty.vercel.app)** · Watch together, wherever you are.
+
 A watch-party app with shared playback, chat, reactions, polls, and host handover. Rooms start empty. Hosts paste a YouTube, Vimeo, or direct HTTPS video/audio link; there is no starter-film catalog or automatic video.
 
 ## Development
